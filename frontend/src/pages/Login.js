@@ -4,7 +4,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import busBg from "../assets/bus-bg.jpg"; // Ensure this image exists
+import busBg from "../assets/bus-bg.jpg";
 
 function Login() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`,
         formData
       );
 
@@ -53,7 +53,6 @@ function Login() {
         backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${busBg})`,
       }}
     >
-      {/* Heading */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -66,7 +65,6 @@ function Login() {
         </p>
       </motion.div>
 
-      {/* Login Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -112,8 +110,7 @@ function Login() {
               className="absolute top-9 right-3 text-gray-600 hover:text-blue-600"
               tabIndex={-1}
             >
-              {/* Corrected: Eye when password is hidden, EyeSlash when shown */}
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
 

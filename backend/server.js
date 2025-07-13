@@ -1,8 +1,8 @@
 // server.js
 const express = require("express");
-const dotenv = require("dotenv");
+const dotenv  = require("dotenv");
 const connectDB = require("./config/db");
-const cors = require("cors");
+const cors    = require("cors");
 
 // Load environment variables
 dotenv.config();
@@ -14,17 +14,20 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(express.json()); // Parses JSON bodies
-app.use(cors());         // Enables CORS
+app.use(express.json());
+app.use(cors());
 
-// Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/bus", require("./routes/busRoutes"));
-app.use("/api/location", require("./routes/locationRoutes"));
-app.use("/api/bookings", require("./routes/bookingRoutes"));
-app.use("/api/stats", require("./routes/stats"));
-app.use("/api/admin", require("./routes/adminRoutes")); // ✅ ADD admin routes here
+// Health‑check route
+app.get("/", (_req, res) => res.send("🚍 E‑Bus API is running"));
 
-// Start server
+// API routes
+app.use("/api/auth",      require("./routes/authRoutes"));
+app.use("/api/bus",       require("./routes/busRoutes"));
+app.use("/api/location",  require("./routes/locationRoutes"));
+app.use("/api/bookings",  require("./routes/bookingRoutes"));
+app.use("/api/stats",     require("./routes/stats"));
+app.use("/api/admin",     require("./routes/adminRoutes"));
+
+// Start server (Render injects PORT)
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server started on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import busBg from "../assets/bus-bg.jpg"; // Ensure this image exists
+import busBg from "../assets/bus-bg.jpg";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,21 +19,19 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", {
-        ...formData,
-        role: "user" // force role to user
-      });
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/auth/register`,
+        { ...formData, role: "user" }
+      );
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
     } catch (err) {
@@ -50,20 +48,20 @@ const Register = () => {
         backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${busBg})`
       }}
     >
-      {/* Heading */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="absolute top-14 z-10 text-center text-white"
       >
-        <h1 className="text-4xl font-bold drop-shadow-md">Get Started with E-Bus</h1>
+        <h1 className="text-4xl font-bold drop-shadow-md">
+          Get Started with E‑Bus
+        </h1>
         <p className="mt-2 text-lg text-gray-200">
           Create your account and book your seat in seconds!
         </p>
       </motion.div>
 
-      {/* Form Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -79,39 +77,34 @@ const Register = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <input
-              type="text"
-              name="firstName"
-              placeholder="First Name"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              name="lastName"
-              placeholder="Last Name"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
-            />
-          </div>
-          <div>
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
-            />
-          </div>
+          <input
+            type="text"
+            name="firstName"
+            placeholder="First Name"
+            value={formData.firstName}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+          />
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Last Name"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+          />
+
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -131,6 +124,7 @@ const Register = () => {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
+
           <button
             type="submit"
             disabled={loading}
