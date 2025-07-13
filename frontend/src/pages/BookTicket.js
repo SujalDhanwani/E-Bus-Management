@@ -10,6 +10,7 @@ const BookTicket = () => {
     seats: 1,
   });
   const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchingBuses, setFetchingBuses] = useState(true);
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const BookTicket = () => {
         setBuses(res.data);
       } catch (err) {
         console.error(err);
-        alert("Error fetching buses");
+        setError("❌ Error fetching buses");
       } finally {
         setFetchingBuses(false);
       }
@@ -41,6 +42,13 @@ const BookTicket = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess("");
+    setError("");
+
+    if (!formData.busId || !formData.passengerName || formData.seats < 1) {
+      setError("Please fill all fields correctly.");
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -55,7 +63,7 @@ const BookTicket = () => {
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.msg || "Error booking ticket");
+      setError(err.response?.data?.msg || "Error booking ticket");
     } finally {
       setLoading(false);
     }
@@ -74,6 +82,11 @@ const BookTicket = () => {
         {success && (
           <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-2 rounded text-center">
             {success}
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded text-center">
+            {error}
           </div>
         )}
 
@@ -126,8 +139,12 @@ const BookTicket = () => {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-lg font-semibold"
+          disabled={loading || fetchingBuses}
+          className={`w-full text-white py-2 rounded-lg font-semibold transition ${
+            loading || fetchingBuses
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+          }`}
         >
           {loading ? "Booking..." : "Book Ticket"}
         </button>
