@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 const PostBus = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -9,54 +12,44 @@ const PostBus = () => {
     busType: "",
     capacity: "",
     source: "",
-    destination: ""
+    destination: "",
   });
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     // Validate all fields
-    if (
-      !formData.busNumber ||
-      !formData.busType ||
-      !formData.capacity ||
-      !formData.source ||
-      !formData.destination
-    ) {
-      setError("Please fill in all fields.");
-      return;
+    if (Object.values(formData).some((v) => v === "")) {
+      return setError("Please fill in all fields.");
     }
 
-    // Ensure capacity is a number
-    const dataToSubmit = {
-      ...formData,
-      capacity: Number(formData.capacity)
-    };
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return navigate("/login");
+    }
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:5000/api/bus",
-        dataToSubmit,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        `${API_BASE_URL}/api/bus`,
+        { ...formData, capacity: Number(formData.capacity) },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+
       alert("✅ Bus posted successfully!");
+      setFormData({
+        busNumber: "",
+        busType: "",
+        capacity: "",
+        source: "",
+        destination: "",
+      });
       navigate("/view-buses");
     } catch (err) {
       console.error(err);
@@ -77,66 +70,35 @@ const PostBus = () => {
         </h2>
 
         {error && (
-          <div className="mb-4 text-red-600 text-center text-sm">{error}</div>
+          <div className="mb-4 text-center text-sm text-red-600">{error}</div>
         )}
 
-        <div className="space-y-4">
-          <input
-            type="text"
-            name="busNumber"
-            placeholder="Bus Number"
-            value={formData.busNumber}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-            required
-          />
-          <input
-            type="text"
-            name="busType"
-            placeholder="Bus Type"
-            value={formData.busType}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-            required
-          />
-          <input
-            type="number"
-            name="capacity"
-            placeholder="Capacity"
-            value={formData.capacity}
-            onChange={handleChange}
-            min="1"
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-            required
-          />
-          <input
-            type="text"
-            name="source"
-            placeholder="Source"
-            value={formData.source}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-            required
-          />
-          <input
-            type="text"
-            name="destination"
-            placeholder="Destination"
-            value={formData.destination}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-            required
-          />
-        </div>
+        {["busNumber", "busType", "capacity", "source", "destination"].map(
+          (field) => (
+            <input
+              key={field}
+              type={field === "capacity" ? "number" : "text"}
+              name={field}
+              placeholder={
+                field.charAt(0).toUpperCase() + field.slice(1)
+              }
+              value={formData[field]}
+              onChange={handleChange}
+              min={field === "capacity" ? "1" : undefined}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400 mt-4 first:mt-0"
+              required
+            />
+          )
+        )}
 
         <button
           type="submit"
           disabled={loading}
-          className={`w-full mt-6 ${
+          className={`w-full mt-6 text-white py-2 rounded font-semibold transition ${
             loading
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
-          } text-white py-2 rounded transition font-semibold`}
+          }`}
         >
           {loading ? "Posting..." : "Post Bus"}
         </button>

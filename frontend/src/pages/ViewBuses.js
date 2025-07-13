@@ -3,65 +3,71 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 const ViewBuses = () => {
   const [buses, setBuses] = useState([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  /* ---------- Fetch buses & decode role ---------- */
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
-        const decoded = jwtDecode(token);
-        setRole(decoded?.user?.role || null);
-      } catch (err) {
-        console.error("Invalid token", err);
+        setRole(jwtDecode(token)?.user?.role || null);
+      } catch {
+        localStorage.removeItem("token");
       }
     }
 
     const fetchBuses = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/bus");
-        setBuses(res.data);
+        const { data } = await axios.get(`${API_BASE_URL}/api/bus`);
+        setBuses(data);
       } catch (err) {
         console.error(err);
         alert("Error fetching buses");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchBuses();
-  }, []);
+  }, [API_BASE_URL]);
 
+  /* ---------- Handlers ---------- */
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this bus?")) return;
+
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/bus/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/bus/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Bus deleted.");
-      setBuses(buses.filter((bus) => bus._id !== id));
+      setBuses((prev) => prev.filter((bus) => bus._id !== id));
     } catch (err) {
       console.error(err);
       alert("Error deleting bus");
     }
   };
 
-  const handleEdit = (bus) => {
-    navigate(`/edit-bus/${bus._id}`);
-  };
+  const handleEdit = (id) => navigate(`/edit-bus/${id}`);
+  const handleView = (id) => navigate(`/bus/${id}`);
 
-  const handleView = (id) => {
-    navigate(`/bus/${id}`);
-  };
-
+  /* ---------- Filter ---------- */
   const filteredBuses = buses.filter((bus) =>
-    bus.busNumber?.toLowerCase().includes(search.toLowerCase()) ||
-    bus.source?.toLowerCase().includes(search.toLowerCase()) ||
-    bus.destination?.toLowerCase().includes(search.toLowerCase())
+    [bus.busNumber, bus.source, bus.destination]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase())
   );
 
+  /* ---------- Render ---------- */
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -71,13 +77,15 @@ const ViewBuses = () => {
 
         <input
           type="text"
-          placeholder="Search by bus number or location..."
+          placeholder="Search by bus number or location…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border border-gray-300 p-2 w-full rounded mb-6 focus:outline-none focus:ring focus:border-blue-400"
         />
 
-        {filteredBuses.length === 0 ? (
+        {loading ? (
+          <p className="text-center text-gray-500">Loading buses…</p>
+        ) : filteredBuses.length === 0 ? (
           <p className="text-center text-gray-500">No buses found.</p>
         ) : (
           <ul className="space-y-4">
@@ -91,7 +99,7 @@ const ViewBuses = () => {
                     {bus.busNumber}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {(bus.busType || bus.type || "Type not specified")} • {bus.capacity || "N/A"} seats
+                    {(bus.busType || bus.type || "Type N/A")} • {bus.capacity || "N/A"} seats
                   </p>
                   <p className="text-sm text-gray-600">
                     {bus.source} ➡ {bus.destination}
@@ -109,7 +117,7 @@ const ViewBuses = () => {
                   {role === "driver" && (
                     <>
                       <button
-                        onClick={() => handleEdit(bus)}
+                        onClick={() => handleEdit(bus._id)}
                         className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
                       >
                         Edit

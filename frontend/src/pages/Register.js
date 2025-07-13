@@ -5,33 +5,47 @@ import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import busBg from "../assets/bus-bg.jpg";
 
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: "",
   });
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
+    if (formData.password !== formData.confirmPassword) {
+      return setError("Passwords do not match.");
+    }
+    if (formData.password.length < 6) {
+      return setError("Password must be at least 6 characters.");
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/auth/register`,
-        { ...formData, role: "user" }
-      );
+      const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        role: "user",
+      });
+
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
     } catch (err) {
@@ -45,9 +59,10 @@ const Register = () => {
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
       style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${busBg})`
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url(${busBg})`,
       }}
     >
+      {/* Heading */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -62,6 +77,7 @@ const Register = () => {
         </p>
       </motion.div>
 
+      {/* Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -83,8 +99,8 @@ const Register = () => {
             placeholder="First Name"
             value={formData.firstName}
             onChange={handleChange}
-            required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+            required
           />
           <input
             type="text"
@@ -92,8 +108,8 @@ const Register = () => {
             placeholder="Last Name"
             value={formData.lastName}
             onChange={handleChange}
-            required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+            required
           />
           <input
             type="email"
@@ -101,10 +117,11 @@ const Register = () => {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            required
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+            required
           />
 
+          {/* Password Field */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -112,8 +129,8 @@ const Register = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              required
               className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+              required
             />
             <button
               type="button"
@@ -124,6 +141,17 @@ const Register = () => {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
           </div>
+
+          {/* Confirm Password */}
+          <input
+            type={showPassword ? "text" : "password"}
+            name="confirmPassword"
+            placeholder="Confirm Password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
+            required
+          />
 
           <button
             type="submit"

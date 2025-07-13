@@ -2,13 +2,17 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
 const CreateDriver = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: ""
+    email: "",
   });
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -18,14 +22,15 @@ const CreateDriver = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
+    setLoading(true);
 
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/api/admin/create-driver",
+        `${API_BASE_URL}/api/admin/create-driver`,
         formData,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -34,6 +39,8 @@ const CreateDriver = () => {
     } catch (err) {
       console.error(err);
       setMessage(err.response?.data?.msg || "❌ Error creating driver.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,9 +48,19 @@ const CreateDriver = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
       <div className="max-w-md w-full bg-white p-8 rounded shadow">
         <h2 className="text-2xl font-bold mb-4 text-center">Create Driver</h2>
+
         {message && (
-          <div className="mb-4 text-sm text-green-600 break-words">{message}</div>
+          <div
+            className={`mb-4 text-sm break-words text-center ${
+              message.startsWith("✅")
+                ? "text-green-600"
+                : "text-red-600"
+            }`}
+          >
+            {message}
+          </div>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -74,9 +91,14 @@ const CreateDriver = () => {
           />
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+            disabled={loading}
+            className={`w-full py-2 rounded text-white transition ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
           >
-            Create Driver
+            {loading ? "Creating..." : "Create Driver"}
           </button>
         </form>
 

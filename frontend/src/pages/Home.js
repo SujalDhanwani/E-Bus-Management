@@ -24,17 +24,20 @@ const Home = () => {
     totalBuses: 0,
   });
 
+  // ✅ Backend API base URL (uses environment variable in production)
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/stats");
+        const res = await axios.get(`${API_BASE_URL}/api/stats`);
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
       }
     };
     fetchStats();
-  }, []);
+  }, [API_BASE_URL]);
 
   return (
     <div className="flex flex-col min-h-screen font-sans">

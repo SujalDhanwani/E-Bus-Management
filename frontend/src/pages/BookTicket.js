@@ -10,16 +10,22 @@ const BookTicket = () => {
     seats: 1,
   });
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fetchingBuses, setFetchingBuses] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBuses = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/bus");
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/bus`
+        );
         setBuses(res.data);
       } catch (err) {
         console.error(err);
         alert("Error fetching buses");
+      } finally {
+        setFetchingBuses(false);
       }
     };
     fetchBuses();
@@ -35,10 +41,11 @@ const BookTicket = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccess("");
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:5000/api/bookings",
+        `${process.env.REACT_APP_API_BASE_URL}/api/bookings`,
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -49,6 +56,8 @@ const BookTicket = () => {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.msg || "Error booking ticket");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,20 +79,24 @@ const BookTicket = () => {
 
         <label className="block">
           <span className="text-gray-700">Select Bus</span>
-          <select
-            name="busId"
-            value={formData.busId}
-            onChange={handleChange}
-            className="border p-2 w-full mt-1 rounded focus:outline-none focus:ring focus:border-blue-300"
-            required
-          >
-            <option value="">-- Choose a Bus --</option>
-            {buses.map((bus) => (
-              <option key={bus._id} value={bus._id}>
-                {bus.busNumber} ({bus.source} ➡ {bus.destination})
-              </option>
-            ))}
-          </select>
+          {fetchingBuses ? (
+            <div className="text-sm text-gray-500 mt-2">Loading buses...</div>
+          ) : (
+            <select
+              name="busId"
+              value={formData.busId}
+              onChange={handleChange}
+              className="border p-2 w-full mt-1 rounded focus:outline-none focus:ring focus:border-blue-300"
+              required
+            >
+              <option value="">-- Choose a Bus --</option>
+              {buses.map((bus) => (
+                <option key={bus._id} value={bus._id}>
+                  {bus.busNumber} ({bus.source} ➡ {bus.destination})
+                </option>
+              ))}
+            </select>
+          )}
         </label>
 
         <label className="block">
@@ -113,9 +126,10 @@ const BookTicket = () => {
 
         <button
           type="submit"
+          disabled={loading}
           className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-lg font-semibold"
         >
-          Book Ticket
+          {loading ? "Booking..." : "Book Ticket"}
         </button>
       </form>
     </div>

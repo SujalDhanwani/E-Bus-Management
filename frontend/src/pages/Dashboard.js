@@ -1,32 +1,46 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import LiveLocationMap from "../components/LiveLocationMap";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const [role, setRole] = useState(null);
 
-  let role = null;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-  // Try decoding the token
-  if (token) {
+    // Redirect if no token
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    // Decode token and extract role
     try {
       const decoded = jwtDecode(token);
-      role = decoded?.user?.role || null;
+      const userRole = decoded?.user?.role;
+      setRole(userRole);
+
+      // Optional: handle unknown role
+      if (!userRole) {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
     } catch (err) {
       console.error("Invalid token", err);
       localStorage.removeItem("token");
       navigate("/login");
     }
-  }
+  }, [navigate]);
 
-  // Redirect if no token
-  useEffect(() => {
-    if (!token) {
-      navigate("/login");
-    }
-  }, [token, navigate]);
+  if (!role) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600 text-lg">Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center px-4 py-8">
@@ -36,7 +50,6 @@ const Dashboard = () => {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Common */}
           <Link
             to="/view-buses"
             className="block bg-gradient-to-r from-blue-500 to-blue-600 text-white p-5 rounded-lg shadow hover:from-blue-600 hover:to-blue-700 transition text-center font-semibold"
