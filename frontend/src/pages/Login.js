@@ -6,16 +6,15 @@ import { motion } from "framer-motion";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import busBg from "../assets/bus-bg.jpg";
 
-function Login() {
+const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,23 +23,23 @@ function Login() {
 
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/auth/login`,
+        `${process.env.REACT_APP_API_BASE_URL || "http://localhost:5000"}/api/auth/login`,
         formData
       );
 
       const token = res.data.token;
+      if (!token) throw new Error("Token not received");
+
       localStorage.setItem("token", token);
 
       const decoded = jwtDecode(token);
-      const role = decoded.user.role;
+      const role = decoded?.user?.role;
 
-      if (role === "admin") {
-        navigate("/admin-dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      if (role === "admin") navigate("/admin-dashboard");
+      else navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.msg || "Login failed");
+      console.error("Login error:", err);
+      setError(err.response?.data?.msg || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -88,8 +87,8 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
               placeholder="you@example.com"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
             />
           </div>
 
@@ -101,12 +100,12 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
               placeholder="••••••••"
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 shadow-sm"
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((prev) => !prev)}
               className="absolute top-9 right-3 text-gray-600 hover:text-blue-600"
               tabIndex={-1}
             >
@@ -137,6 +136,6 @@ function Login() {
       </motion.div>
     </div>
   );
-}
+};
 
 export default Login;
