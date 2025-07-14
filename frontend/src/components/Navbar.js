@@ -6,15 +6,15 @@ const Navbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  let role = null;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      role = decoded?.user?.role || null;
-    } catch (err) {
-      console.error("Invalid token", err);
-    }
-  }
+  // If you ever need the role later, decode here—otherwise leave it out
+  // let role = null;
+  // if (token) {
+  //   try {
+  //     role = jwtDecode(token)?.user?.role || null;
+  //   } catch (err) {
+  //     console.error("Invalid token", err);
+  //   }
+  // }
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -24,12 +24,10 @@ const Navbar = () => {
   return (
     <nav className="bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        {/* Logo */}
         <Link to="/" className="text-2xl font-extrabold tracking-wide">
           E-Bus Management
         </Link>
 
-        {/* Links */}
         <div className="flex space-x-4 items-center">
           {token ? (
             <>
@@ -39,7 +37,6 @@ const Navbar = () => {
               >
                 Dashboard
               </Link>
-
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 transition px-4 py-1 rounded font-medium"

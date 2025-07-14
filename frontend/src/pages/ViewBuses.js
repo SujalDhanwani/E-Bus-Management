@@ -37,7 +37,7 @@ const ViewBuses = () => {
     };
 
     fetchBuses();
-  }, [API_BASE_URL]);
+  }, []);
 
   /* ---------- Handlers ---------- */
   const handleDelete = async (id) => {
