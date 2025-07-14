@@ -13,7 +13,7 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "https://e-bus-management-three.vercel.app", // ✅ Only allow Vercel frontend
+  origin: ["https://e-bus-management-three.vercel.app"], // ✅ Only allow Vercel frontend
   credentials: true
 }));
 
